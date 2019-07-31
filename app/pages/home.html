@@ -1,0 +1,169 @@
+<div id="main_area">
+    <!-- Slider -->
+    <div class="row">
+        <div class="col-sm-6" id="slider-thumbs">
+            <!-- Bottom switcher of slider -->
+            <ul id='thumbnailBlock' class="hide-bullets">
+                
+            </ul>
+        </div>
+        <div class="col-sm-6">
+            <div class="col-xs-12" id="slider">
+                <!-- Top part of the slider -->
+                <div class="row">
+                    <div class="col-sm-12" id="carousel-bounding-box">f
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--/Slider-->
+    </div>
+
+</div>
+<script id="file-template" type="text/x-handlebars-template">
+  <li class="col-sm-3 filebox" data-path='{{fpath}}'><a class="thumbnail" id="carousel-selector-{{ndx}}"><img src="{{fpath}}" title='{{fname}}'></a></li>
+</script>
+<script id="folder-template" type="text/x-handlebars-template">
+  <li class="col-sm-3 folderbox" data-path='{{fpath}}'><a class="thumbnail" id="carousel-selector-{{ndx}}"><img src="app/assets/media/folder.png" title='{{fname}}'></a></li>
+</script>
+<script id="carousel-template" type="text/x-handlebars-template">
+    <div class="carousel slide" id="myCarousel">
+        <!-- Carousel items -->
+        <div id='carouselBlock' class="carousel-inner">
+            
+        </div>
+        <!-- Carousel nav -->
+        <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+        <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+            <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
+    </div>
+</script>
+<script>
+var fileTemplate = handleBars.compile($("#file-template").html());
+var folderTemplate = handleBars.compile($("#folder-template").html());
+var carouselTemplate = handleBars.compile($("#carousel-template").html());
+var navPathArr = [];
+var currentPath = null;
+$(function() {
+    $(".carousel-control").hide();
+
+    $("#thumbnailBlock").delegate(".filebox","click", function() {
+        console.log($(this).data("path"));
+    });
+    $("#thumbnailBlock").delegate(".folderbox","click", function() {
+        navPathArr.push(currentPath);
+        cleanWorkspace();
+        scanFolder($(this).data("path"));
+    });
+
+
+    // When the carousel slides, auto update the text
+    $('#myCarousel').on('slid.bs.carousel', function (e) {
+        var id = $('.item.active').data('slide-number');
+        $('#carousel-text').html($('#slide-content-'+id).html());
+    });
+
+    cleanWorkspace();
+});
+
+function clearWorkspace() {
+    navPathArr = [];
+    cleanWorkspace();
+}
+
+function cleanWorkspace() {
+    $("#thumbnailBlock").html("");
+    $("#carouselBlock").html("");
+    
+    if(navPathArr.length<=0) {
+        $("#gebackbutton").addClass("hidden");
+    } else {
+        $("#gebackbutton").removeClass("hidden");
+    }
+    $("#carousel-bounding-box").html(carouselTemplate({}));
+
+    $(".right.carousel-control").click(function() {
+        $("#myCarousel").carousel("next");
+    });
+
+    $(".left.carousel-control").click(function() {
+        $("#myCarousel").carousel("prev");
+    });
+
+    $(".carousel-control").hide();
+}
+
+function goBack() {
+    fPath = navPathArr.pop();
+    $("#thumbnailBlock").html("");
+    scanFolder(fPath);
+    if(navPathArr.length<=0) {
+        $("#gebackbutton").addClass("hidden");
+    } else {
+        $("#gebackbutton").removeClass("hidden");
+    }
+}
+
+function selectFolder() {
+    dialogUtils.showOpenDialog({
+        title:"Select a folder",
+        properties: ["openDirectory"]
+    }, (folderPaths) => {
+        if(folderPaths === undefined){
+            console.log("No destination folder selected");
+            return;
+        }else{
+            scanFolder(folderPaths[0]);
+        }
+    });
+}
+function scanFolder(folderPath) {
+    currentPath = folderPath;
+    fs.readdir(folderPath, (err, files) => {
+        files.forEach(file => {
+            fPath = fsPath.join(folderPath,file);
+            if(file.charAt(0)=="." || file.charAt(0)=="~") return;
+            if(fs.statSync(fPath).isDirectory()) {
+                $("#thumbnailBlock").prepend(folderTemplate({"fname":file,"fpath":fPath,"ndx":-1}));
+            } else {
+                $("#thumbnailBlock").append(fileTemplate({"fname":file,"fpath":fPath,"ndx":$("#thumbnailBlock .filebox").length}));
+            }
+        });
+
+        $("#thumbnailBlock .filebox").each(function(a,b) {
+            imgPath = $(this).find("img").attr("src");
+            $("#carouselBlock").append('<div class="item" data-slide-number="'+a+'"><img src="'+imgPath+'"></div>');
+        });
+
+        if($("#thumbnailBlock .filebox").length<=0) {
+            $(".carousel-control").hide();
+        } else {
+            $(".carousel-control").show();
+        }
+
+        $("#carouselBlock .item:first-child").addClass("active");
+
+        $('#myCarousel').carousel({
+            interval: 1000
+        });
+
+        $(".carousel-control").show();
+
+        //Handles the carousel thumbnails
+        $('[id^=carousel-selector-]').click(function () {
+            var id_selector = $(this).attr("id");
+            try {
+                var id = /-(\d+)$/.exec(id_selector)[1];
+                console.log(id_selector, id);
+                jQuery('#myCarousel').carousel(parseInt(id));
+            } catch (e) {
+                console.log('Regex failed!', e);
+            }
+        });
+    })
+}
+</script>
