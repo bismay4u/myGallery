@@ -14,12 +14,23 @@
 .hide-bullets {
     list-style:none;
     margin-left: -40px;
-    margin-top:20px;
+    /*margin-top:20px;*/
 }
 
+#thumbnailBlock>li {
+    margin-bottom: 20px;
+}
+#thumbnailBlock>li .fname {
+    width: 100%;
+    height: 20px;
+    overflow: hidden;
+    margin-top: 2px;
+}
 .thumbnail {
     padding: 0;
     height: 172px;
+    border: 0px;
+    cursor: pointer;
 }
 
 .carousel-inner>.item>img, .carousel-inner>.item>a>img {

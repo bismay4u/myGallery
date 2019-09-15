@@ -32,7 +32,12 @@ function createWindow() {
         maximizable: true,
         resizable: true,
         icon: './app/images/logos/logo.png',
-        'node-integration': false
+        'node-integration': true,
+        webPreferences: {
+            nodeIntegration: true
+            // nativeWindowOpen: true,
+            // nodeIntegrationInWorker: true
+        }
     })
 
     try{

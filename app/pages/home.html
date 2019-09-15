@@ -1,20 +1,17 @@
 <div id="main_area">
     <!-- Slider -->
-    <div class="row">
-        <div class="col-sm-6" id="slider-thumbs">
+    <div class="row" style="height: 100%;">
+        <div class="col-sm-6 col-md-6 col-lg-6" id="slider-thumbs" style="height: 100%;overflow: auto;padding: 0px;border: 1px solid #EFEFEF;">
             <!-- Bottom switcher of slider -->
-            <ul id='thumbnailBlock' class="hide-bullets">
-                
+            <ul id='thumbnailBlock' class="hide-bullets clearfix">
+                <div class="text-center">
+                    <h1>Load A Picture Folder</h1>
+                    <p>Click <b>top right folder icon</b> for loading Pictures</p>
+                </div>
             </ul>
         </div>
-        <div class="col-sm-6">
-            <div class="col-xs-12" id="slider">
-                <!-- Top part of the slider -->
-                <div class="row">
-                    <div class="col-sm-12" id="carousel-bounding-box">f
-                        
-                    </div>
-                </div>
+        <div class="col-sm-6 col-md-6 col-lg-6" id="carousel-view" style="padding: 0px;">
+            <div id="carousel-bounding-box">
             </div>
         </div>
         <!--/Slider-->
@@ -22,10 +19,10 @@
 
 </div>
 <script id="file-template" type="text/x-handlebars-template">
-  <li class="col-sm-3 filebox" data-path='{{fpath}}'><a class="thumbnail" id="carousel-selector-{{ndx}}"><img src="{{fpath}}" title='{{fname}}'></a></li>
+  <li class="col-sm-3 filebox" data-path='{{fpath}}'><a class="thumbnail" id="carousel-selector-{{ndx}}"><img src="{{fpath}}" title='{{fname}}'><div class='text-center fname'>{{fname}}</div></a></li>
 </script>
 <script id="folder-template" type="text/x-handlebars-template">
-  <li class="col-sm-3 folderbox" data-path='{{fpath}}'><a class="thumbnail" id="carousel-selector-{{ndx}}"><img src="app/assets/media/folder.png" title='{{fname}}'></a></li>
+  <li class="col-sm-3 folderbox" data-path='{{fpath}}'><a class="thumbnail" id="carousel-selector-{{ndx}}"><img src="app/assets/media/folder.png" title='{{fname}}'><div class='text-center fname'>{{fname}}</div></a></li>
 </script>
 <script id="carousel-template" type="text/x-handlebars-template">
     <div class="carousel slide" id="myCarousel">
@@ -67,33 +64,54 @@ $(function() {
         $('#carousel-text').html($('#slide-content-'+id).html());
     });
 
-    cleanWorkspace();
+    $("#carouselInterval").on("change", function() {
+        resetCarousel();
+    });
+
+    if(localStorage.getItem("CAROUSEL_INTERVAL")!=null) {
+        $("#carouselInterval").val(localStorage.getItem("CAROUSEL_INTERVAL"));
+    }
+
+    clearWorkspace();
+
+    $(window).on("resize", function() {
+        fixUI();
+    });
+    fixUI();
+
+    oldPath = localStorage.getItem("CURRENT_PATH");
+    if(oldPath!=null && oldPath.length>0) {
+        scanFolder(oldPath);
+    }
 });
+
+function fixUI() {
+    $(".thumbnail").css("height",($("#thumbnailBlock").width()/5.4));
+    $("#main_area").css("height",($(window).height()-$("#toolbar").height()-$("#footer").height()-20)+"px");
+}
 
 function clearWorkspace() {
     navPathArr = [];
     cleanWorkspace();
+
+    $("#thumbnailBlock").html(`<div class="text-center onloadclear">
+                    <h1>Load A Picture Folder</h1>
+                    <p>Click <b>top right folder icon</b> for loading Pictures</p>
+                </div>`);
 }
 
 function cleanWorkspace() {
     $("#thumbnailBlock").html("");
     $("#carouselBlock").html("");
+
+    $("#thumbnailBlock").find(".onloadclear").detach();
     
     if(navPathArr.length<=0) {
         $("#gebackbutton").addClass("hidden");
     } else {
         $("#gebackbutton").removeClass("hidden");
     }
-    $("#carousel-bounding-box").html(carouselTemplate({}));
-
-    $(".right.carousel-control").click(function() {
-        $("#myCarousel").carousel("next");
-    });
-
-    $(".left.carousel-control").click(function() {
-        $("#myCarousel").carousel("prev");
-    });
-
+    
     $(".carousel-control").hide();
 }
 
@@ -117,12 +135,15 @@ function selectFolder() {
             console.log("No destination folder selected");
             return;
         }else{
+            localStorage.setItem("CURRENT_PATH",folderPaths[0]);
             scanFolder(folderPaths[0]);
         }
     });
 }
 function scanFolder(folderPath) {
     currentPath = folderPath;
+    $("#PATH_CURRENT").html(currentPath);
+    
     fs.readdir(folderPath, (err, files) => {
         files.forEach(file => {
             fPath = fsPath.join(folderPath,file);
@@ -134,36 +155,89 @@ function scanFolder(folderPath) {
             }
         });
 
-        $("#thumbnailBlock .filebox").each(function(a,b) {
-            imgPath = $(this).find("img").attr("src");
-            $("#carouselBlock").append('<div class="item" data-slide-number="'+a+'"><img src="'+imgPath+'"></div>');
-        });
+        $(".thumbnail").css("height",($("#thumbnailBlock").width()/5.4));
 
-        if($("#thumbnailBlock .filebox").length<=0) {
-            $(".carousel-control").hide();
-        } else {
-            $(".carousel-control").show();
-        }
+        $("#thumbnailBlock").find(".onloadclear").detach();
 
-        $("#carouselBlock .item:first-child").addClass("active");
-
-        $('#myCarousel').carousel({
-            interval: 1000
-        });
-
-        $(".carousel-control").show();
-
-        //Handles the carousel thumbnails
-        $('[id^=carousel-selector-]').click(function () {
-            var id_selector = $(this).attr("id");
-            try {
-                var id = /-(\d+)$/.exec(id_selector)[1];
-                console.log(id_selector, id);
-                jQuery('#myCarousel').carousel(parseInt(id));
-            } catch (e) {
-                console.log('Regex failed!', e);
-            }
-        });
+        resetCarousel();
     })
+}
+
+function resetCarousel() {
+    $("#carouselBlock").html("");
+    $("#carousel-bounding-box").html(carouselTemplate({}));
+
+    $("#carousel-bounding-box").html(carouselTemplate({}));
+
+    $(".right.carousel-control").click(function() {
+        $("#myCarousel").carousel("next");
+    });
+
+    $(".left.carousel-control").click(function() {
+        $("#myCarousel").carousel("prev");
+    });
+
+    $("#thumbnailBlock .filebox").each(function(a,b) {
+        imgPath = $(this).find("img").attr("src");
+        $("#carouselBlock").append('<div class="item" data-slide-number="'+a+'"><img src="'+imgPath+'"></div>');
+    });
+
+    if($("#thumbnailBlock .filebox").length<=0) {
+        $(".carousel-control").hide();
+    } else {
+        $(".carousel-control").show();
+    }
+
+    $("#carouselBlock .item:first-child").addClass("active");
+
+    $('#myCarousel').carousel({
+        interval: parseInt($("#carouselInterval").val())
+    });
+    localStorage.setItem("CAROUSEL_INTERVAL",$("#carouselInterval").val());
+
+    $(".carousel-control").show();
+
+    //Handles the carousel thumbnails
+    $('[id^=carousel-selector-]').click(function () {
+        var id_selector = $(this).attr("id");
+        try {
+            var id = /-(\d+)$/.exec(id_selector)[1];
+            console.log(id_selector, id);
+            jQuery('#myCarousel').carousel(parseInt(id));
+        } catch (e) {
+            console.log('Regex failed!', e);
+        }
+    });
+}
+
+function toggleFullScreen() {
+    $("#slider-thumbs").toggleClass("hidden");
+
+    if($("#slider-thumbs").hasClass("hidden")) {
+        $("#carousel-view").attr("class","col-sm-12 col-md-12 col-lg-12");
+    } else {
+        $("#carousel-view").attr("class","col-sm-6 col-md-6 col-lg-6");
+        fixUI();
+    }
+}
+
+function toggleCarousel(btn) {
+    if($(btn).hasClass("glyphicon-play")) {
+        $("#myCarousel").carousel("pause");
+        $(btn).removeClass("glyphicon-play");
+        $(btn).addClass("glyphicon-pause");
+    } else {
+        $("#myCarousel").carousel("cycle");
+        $(btn).removeClass("glyphicon-pause");
+        $(btn).addClass("glyphicon-play");
+    }
+}
+
+function openExternal() {
+    //shell.openExternal("file://"+$("#carouselBlock .item.active img").attr("src"));
+    shell.openItem($("#carouselBlock .item.active img").attr("src"));
+}
+function openFolder() {
+    shell.showItemInFolder($("#carouselBlock .item.active img").attr("src"))
 }
 </script>

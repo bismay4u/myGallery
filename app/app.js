@@ -1,4 +1,3 @@
-const requireLive = require('require-reload')(require);
 const remote = require('electron').remote;
 const os = require('os');
 const fs = require('fs');
@@ -6,17 +5,15 @@ const fsUtils = require('fs');
 const fsExtra = require('fs-extra');
 const fsPath = require('path');
 
-const winston = require('winston');
-
 const saveFile = require('electron').remote.require('electron-save-file');
 const dialogUtils = require('electron').remote.dialog 
+const shell = require('electron').shell; 
 const electronShortcut = require('electron').remote.require('electron-localshortcut');
 
 //Loading other libs
 const handleBars = require('handlebars');
 const hashMD5 = require('md5');
 const moment = require("moment");
-// const Vue = require("vue");
 
 //LIBS
 const appUI=require("./app/assets/js/app-ux.js");
@@ -80,9 +77,9 @@ $(function() {
 
         loadAppShell();
 
-        setTimeout(function() {
-            appAPI.checkAlerts();
-        },appData.getConfig('NOTIFICATION_INTERVAL'));
+        // setTimeout(function() {
+        //     appAPI.checkAlerts();
+        // },appData.getConfig('NOTIFICATION_INTERVAL'));
     });
 });
 
@@ -191,48 +188,4 @@ function appDebugger() {
             break;
         }
     });
-}
-function initLoggers() {
-    logPath=getLogsPath();
-
-    logger=new (winston.Logger)({
-            level: 'verbose',
-            transports: [
-                new (winston.transports.Console)({ level: 'warn' }),
-                new (winston.transports.File)({
-                  name: 'info-file',
-                  filename: fsPath.join(logPath,"info.log"),
-                  level: 'info'
-                }),
-                new (winston.transports.File)({
-                  name: 'warn-file',
-                  filename: fsPath.join(logPath,"warning.log"),
-                  level: 'warn'
-                }),
-                new (winston.transports.File)({
-                  name: 'error-file',
-                  filename: fsPath.join(logPath,"error.log"),
-                  level: 'error'
-                })
-            ]
-          });
-
-    // console.debug=function(e) {
-    //         logger.debug(e);//4
-    //     }
-    // console.log=function(e) {
-    //         logger.verbose(e);//3
-    //     }
-    console.info=function(e) {
-            logger.info(e);//2
-        }
-    console.warn=function(e) {
-            logger.warn(e);//1
-        }
-    console.error=function(e) {
-            logger.error(e);//0
-        }
-    
-    console.info("Starting Application On "+moment(new Date()).format("Y-MM-d H:m:s"));
-    console.info("Application Path "+fsPath.join(getAppPath(),"usermedia"));
 }

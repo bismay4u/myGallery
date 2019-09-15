@@ -1,6 +1,4 @@
 module.exports = {
-	localStorage: require('node-localstorage'),
-
 	getData: function(key, key1) {
 		dx=localStorage.getItem(key);
 		if(dx!=null) {

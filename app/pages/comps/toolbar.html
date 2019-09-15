@@ -8,8 +8,24 @@
     </div>
     
     <div class="collapse navbar-collapse pull-right" id="myNavbar">
+      <div class="btn btn-sm navbar-btn glyphicon glyphicon-folder-open pull-left" onclick="selectFolder()"></div>
+
+      |
+
+      <div class="btn btn-sm navbar-btn glyphicon glyphicon-play" onclick="toggleCarousel(this)"></div>
+      <div class="btn btn-sm navbar-btn glyphicon glyphicon-fullscreen" onclick="toggleFullScreen()"></div>
+      
+      |
+
+      <div class="btn btn-sm navbar-btn glyphicon glyphicon-link" onclick="openExternal(this)"></div>
+      <div class="btn btn-sm navbar-btn glyphicon glyphicon-hdd" onclick="openFolder(this)"></div>
+
+      <!-- <div class="btn btn-sm navbar-btn glyphicon glyphicon-share" onclick="openExternal(this)"></div> -->
+
+      |
+
       <div class="btn btn-sm navbar-btn glyphicon glyphicon-refresh" onclick="clearWorkspace()"></div>
-      <div class="btn btn-sm navbar-btn glyphicon glyphicon-folder-open" onclick="selectFolder()"></div>
+      
     </div>
   </div>
 </nav>

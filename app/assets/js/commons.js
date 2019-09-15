@@ -87,21 +87,21 @@ function getLogsPath() {
 }
 
 function checkAppPaths() {
-  paths=[
-    getAppPath(),
-    getTempPath(),
-    getMyPath(),
-    getLogsPath(),
-    getUserDataPath(),
-  ];
-  $.each(paths,function(k,fPath) {
-    fsUtils.exists(fPath,function(ans) {
-        if(!ans) {
-          fsUtils.mkdir(fPath);
-        }
-        // console.log(fPath);
-      });
-  });
+  // paths=[
+  //   getAppPath(),
+  //   getTempPath(),
+  //   getMyPath(),
+  //   getLogsPath(),
+  //   getUserDataPath(),
+  // ];
+  // $.each(paths,function(k,fPath) {
+  //   fsUtils.exists(fPath,function(ans) {
+  //       if(!ans) {
+  //         fsUtils.mkdir(fPath);
+  //       }
+  //       // console.log(fPath);
+  //     });
+  // });
 }
 
 function closePopups() {

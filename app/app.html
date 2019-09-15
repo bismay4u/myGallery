@@ -22,15 +22,25 @@
                 Loading Application ...
             </div>
         </div>
-        <div id='footer'></div>
-        <!-- /.container-fluid -->
+        <div id='footer'>
+            <div class='navbar navbar-default navbar-fixed-bottom text-left' style="padding-left: 10px;">
+                <span id='PATH_CURRENT'></span>
+
+                <select id='carouselInterval' class='form-control pull-right' style="width: 100px;float: left;margin: 10px;">
+                    <option value="1000">1 Sec</option>
+                    <option value="2000">2 Sec</option>
+                    <option value="3000">3 Sec</option>
+                    <option value="5000">5 Secs</option>
+                    <option value="10000">10 Secs</option>
+                    <option value="30000">30 Secs</option>
+                </select>
+            </div>
+        </div>
     </div>
-    <!-- /#page-wrapper -->
 </div>
 <script>
 //$("#mainBody").css("min-height",($(window).height()-$("#navbar").height()-50)+"px");
 appUI.navigatePage(APPCONFIG.HOME,$("#sidebarMenu a[href='"+APPCONFIG.HOME+"']"));
 
 $("#toolbar").load("app/pages/comps/toolbar.html");
-$("#footer").load("app/pages/comps/footer.html");
 </script>
